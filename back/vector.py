@@ -175,6 +175,16 @@ class vectordb:
         if self.collection is None:
             print('경고: 컬렉션이 설정되지 않았습니다.')
             return []
+        
+        # 빈 쿼리인 경우 (파일명으로만 검색)
+        if not query or query.strip() == "":
+            query_return = self.collection.query.fetch_objects(
+                limit=topk,
+                filters=Filter.by_property("file_name").like(file_name_pattern)
+            )
+            return [i.properties for i in query_return.objects]
+        
+        # 쿼리가 있는 경우 하이브리드 검색
         vector = self.emb.call(query)[0]['embedding']
         query_return = self.collection.query.hybrid(
             query=query,
