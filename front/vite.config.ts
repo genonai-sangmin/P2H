@@ -18,34 +18,34 @@ export default defineConfig({
     },
   },
 
-  server: {
-    host: '0.0.0.0',
-    port: 2000,
-    proxy: {
-      '/show_files': {
-        target: 'http://localhost:1999',
-        changeOrigin: true,
-      },
-      '/files': {
-        target: 'http://localhost:1999',
-        changeOrigin: true,
-      },
-    },
-  },
-//  server: {
-//    host: '0.0.0.0',
-//    port: 2000,
-  //  proxy: {
-    //  '/show_files': {
-      //  target: 'http://backend:1999',
-       // changeOrigin: true,
-     // },
-     // '/files': {
-      //  target: 'http://backend:1999',
-       // changeOrigin: true,
-     // },
-   // },
- // },
+  // server: {
+  //   host: '0.0.0.0',
+  //   port: 2000,
+  //   proxy: {
+  //     '/show_files': {
+  //       target: 'http://localhost:1999',
+  //       changeOrigin: true,
+  //     },
+  //     '/files': {
+  //       target: 'http://localhost:1999',
+  //       changeOrigin: true,
+  //     },
+  //   },
+  // },
+ server: {
+   host: '0.0.0.0',
+   port: 2000,
+   proxy: {
+     '/show_files': {
+       target: 'http://backend:1999',
+       changeOrigin: true,
+     },
+     '/files': {
+       target: 'http://backend:1999',
+       changeOrigin: true,
+     },
+   },
+ },
   optimizeDeps: {
     include: ['react-router-dom'],
   },
