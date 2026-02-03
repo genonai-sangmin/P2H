@@ -22,8 +22,8 @@ export interface PageViewModel {
 
 function getApiBaseUrl(): string {
   // Vite exposes env vars starting with VITE_
-  // Fallback keeps local dev simple.
-  return (import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:8000';
+  // Fallback keeps local dev simple. (Using relative path for proxy)
+  return (import.meta as any).env?.VITE_API_BASE_URL || '';
 }
 
 export async function fetchFileList(): Promise<FileName[]> {
