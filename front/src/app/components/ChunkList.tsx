@@ -51,8 +51,7 @@ export const ChunkList: React.FC<ChunkListProps> = ({
                 key={chunk.id}
                 chunk={chunk}
                 isActive={activeChunkId === chunk.id}
-                onClick={() => handleChunkCardClick(chunk)}
-                onViewFull={() => setSelectedChunk(chunk)}
+                onClick={() => setSelectedChunk(chunk)}
               />
             ))
           )}
@@ -80,14 +79,12 @@ interface ChunkCardProps {
   chunk: Chunk;
   isActive: boolean;
   onClick: () => void;
-  onViewFull: () => void;
 }
 
-const ChunkCard: React.FC<ChunkCardProps> = ({ chunk, isActive, onClick, onViewFull }) => {
+const ChunkCard: React.FC<ChunkCardProps> = ({ chunk, isActive, onClick }) => {
   return (
     <div
       onClick={onClick}
-      onDoubleClick={onViewFull}
       className={`
         p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 hover:shadow-md
         ${isActive

@@ -4,6 +4,9 @@ import { Chunk } from '../../data/mockData';
 import { buildPagesFromBackendChunks, fetchChunksByFileName, type PageViewModel } from '../../lib/api';
 import { ChunkList, ErrorBoundary, HTMLViewer, PDFViewer } from '../components';
 import { ArrowLeft, BookOpen, Maximize2 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import Split from 'react-split';
 
 function ViewerPageContent() {
   const navigate = useNavigate();
@@ -36,6 +39,10 @@ function ViewerPageContent() {
   const currentPageData = pageDataByPage[currentPage];
   const chunks = currentPageData?.chunks || [];
   const htmlContent = currentPageData?.htmlContent || '<p>이 페이지에는 내용이 없습니다.</p>';
+  // 임시 마크다운 예시. 실제로는 pageDataByPage에 markdownContent를 추가하거나 변환해서 사용
+  const markdownContent = chunks.length
+    ? chunks.map((c, i) => `- ${c.text || c.content || `청크${i + 1}`}`).join('\n')
+    : '# 마크다운 미리보기\n\n- 청크 없음';
 
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
@@ -136,29 +143,34 @@ function ViewerPageContent() {
         </div>
       </header>
 
-      <main className={`flex-1 grid ${getGridColumns()} gap-0 overflow-hidden transition-all duration-300`}>
-        <div className="relative border-r border-gray-300 bg-white h-full overflow-hidden">
-          <button
-            onClick={() => togglePaneExpansion('pdf')}
-            className="absolute top-2 right-2 z-10 p-2 bg-white rounded-lg shadow-md hover:bg-gray-100 transition"
-            title="PDF 뷰어 확대/축소"
-          >
-            <Maximize2 size={16} className={expandedPane === 'pdf' ? 'text-blue-600' : 'text-gray-600'} />
-          </button>
-          <PDFViewer currentPage={currentPage} onPageChange={handlePageChange} pdfUrl={pdfUrl} />
-        </div>
+      <main className="flex-1 h-full overflow-hidden">
+        <Split
+          className="flex h-full"
+          sizes={[33, 34, 33]}
+          minSize={200}
+          gutterSize={8}
+          direction="horizontal"
+          style={{ display: 'flex', height: '100%' }}
+        >
+          <div className="relative border-r border-gray-300 bg-white h-full overflow-hidden">
+            <button
+              onClick={() => togglePaneExpansion('pdf')}
+              className="absolute top-2 right-2 z-10 p-2 bg-white rounded-lg shadow-md hover:bg-gray-100 transition"
+              title="PDF 뷰어 확대/축소"
+            >
+              <Maximize2 size={16} className={expandedPane === 'pdf' ? 'text-blue-600' : 'text-gray-600'} />
+            </button>
+            <PDFViewer currentPage={currentPage} onPageChange={handlePageChange} pdfUrl={pdfUrl} />
+          </div>
 
-        {expandedPane !== 'pdf' && (
-          <>
-            <div className="relative border-r border-gray-300 bg-white h-full overflow-hidden">
-              <HTMLViewer htmlContent={htmlContent} pageNumber={currentPage} highlightChunk={activeChunkId} />
-            </div>
+          <div className="relative border-r border-gray-300 bg-white h-full overflow-hidden">
+            <HTMLViewer htmlContent={htmlContent} markdownContent={markdownContent} pageNumber={currentPage} highlightChunk={activeChunkId} />
+          </div>
 
-            <div className="relative bg-gray-50 h-full overflow-hidden">
-              <ChunkList chunks={chunks} currentPage={currentPage} onChunkClick={handleChunkClick} activeChunkId={activeChunkId} />
-            </div>
-          </>
-        )}
+          <div className="relative bg-gray-50 h-full overflow-hidden">
+            <ChunkList chunks={chunks} currentPage={currentPage} onChunkClick={handleChunkClick} activeChunkId={activeChunkId} />
+          </div>
+        </Split>
       </main>
     </div>
   );

@@ -1,24 +1,28 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FileText } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 interface HTMLViewerProps {
   htmlContent: string;
+  markdownContent: string;
   pageNumber: number;
   highlightChunk?: string;
 }
 
 export const HTMLViewer: React.FC<HTMLViewerProps> = ({
   htmlContent,
+  markdownContent,
   pageNumber,
   highlightChunk
 }) => {
   const contentRef = useRef<HTMLDivElement>(null);
+  const [mode, setMode] = useState<'html' | 'markdown'>('html');
 
   useEffect(() => {
     if (contentRef.current) {
       contentRef.current.scrollTop = 0;
     }
-  }, [pageNumber]);
+  }, [pageNumber, mode]);
 
   useEffect(() => {
     if (highlightChunk && contentRef.current) {
@@ -27,15 +31,29 @@ export const HTMLViewer: React.FC<HTMLViewerProps> = ({
         element.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     }
-  }, [highlightChunk]);
+  }, [highlightChunk, mode]);
 
   return (
     <div className="flex flex-col h-full bg-white overflow-hidden">
       {/* Header */}
       <div className="flex items-center gap-2 p-4 bg-white border-b border-gray-200 flex-shrink-0">
         <FileText size={20} className="text-blue-600" />
-        <h2 className="font-semibold text-gray-800">HTML 뷰어</h2>
+        <h2 className="font-semibold text-gray-800">청크 뷰어</h2>
         <span className="ml-auto text-sm text-gray-500">페이지 {pageNumber}</span>
+        <div className="ml-4 flex gap-2">
+          <button
+            className={`px-3 py-1 rounded border text-sm font-medium ${mode === 'html' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-blue-500 border-blue-500'}`}
+            onClick={() => setMode('html')}
+          >
+            HTML
+          </button>
+          <button
+            className={`px-3 py-1 rounded border text-sm font-medium ${mode === 'markdown' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-blue-500 border-blue-500'}`}
+            onClick={() => setMode('markdown')}
+          >
+            Markdown
+          </button>
+        </div>
       </div>
 
       {/* Content Area */}
@@ -44,10 +62,16 @@ export const HTMLViewer: React.FC<HTMLViewerProps> = ({
         className="flex-1 overflow-y-auto overflow-x-hidden p-6 scrollbar-thin"
         style={{ minHeight: 0 }}
       >
-        <div
-          className="prose prose-sm max-w-none html-content"
-          dangerouslySetInnerHTML={{ __html: htmlContent }}
-        />
+        {mode === 'html' ? (
+          <div
+            className="prose prose-sm max-w-none html-content"
+            dangerouslySetInnerHTML={{ __html: htmlContent }}
+          />
+        ) : (
+          <div className="prose prose-sm max-w-none html-content">
+            <ReactMarkdown>{markdownContent}</ReactMarkdown>
+          </div>
+        )}
       </div>
 
       {/* Styles for HTML Content */}
