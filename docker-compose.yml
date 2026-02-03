@@ -8,17 +8,19 @@ services:
       dockerfile: Dockerfile
     container_name: hpc-backend
     ports:
-      - "1999:8000"
+      - "1999:1999"
     environment:
       - ENV=development
       - PYTHONUNBUFFERED=1
+    env_file:
+      - ./back/.env
     volumes:
       - ./back:/app
     restart: unless-stopped
     networks:
       - hpc-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      test: ["CMD", "curl", "-f", "http://localhost:1999/"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -31,7 +33,7 @@ services:
       dockerfile: Dockerfile
     container_name: hpc-frontend
     ports:
-      - "2000:5173"
+      - "2000:2000"
     environment:
       - NODE_ENV=development
     volumes:
@@ -44,7 +46,7 @@ services:
       backend:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5173/"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:2000/"]
       interval: 30s
       timeout: 10s
       retries: 3

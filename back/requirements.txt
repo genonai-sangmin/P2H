@@ -3,3 +3,4 @@ fastapi
 uvicorn[standard]
 httpx>=0.26,<0.29
 requests==2.31.0
+python-dotenv

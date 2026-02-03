@@ -1,17 +1,36 @@
 import weaviate  # 주석 해제 필수
+import os
 from weaviate.classes.query import Filter
+from dotenv import load_dotenv
 # 내부 컨버터 임포트 제거 (v4에서는 불필요)
 from embedding import embedding_serving
 
+# .env 파일 로드
+load_dotenv()
+
 
 class vectordb:
-    def __init__(self, genos_ip:str = "llmops-weaviate-service", 
-                 http_port: int = 8080, 
-                 grpc_port: int = 50051,
+    def __init__(self, genos_ip:str = None, 
+                 http_port: int = None, 
+                 grpc_port: int = None,
                  idx:str = None,
-                 embedding_serving_id:int = 10,
-                 embedding_bearer_token:str = '1ed5a9dbe58043219b6c1be758910450',
-                 embedding_genos_url:str = 'https://genos.genon.ai:3443'):
+                 embedding_serving_id:int = None,
+                 embedding_bearer_token:str = None,
+                 embedding_genos_url:str = None):
+        # 환경변수에서 기본값 로드
+        genos_ip = genos_ip or os.getenv('WEAVIATE_HOST', 'llmops-weaviate-service')
+        http_port = http_port or int(os.getenv('WEAVIATE_HTTP_PORT', 8080))
+        grpc_port = grpc_port or int(os.getenv('WEAVIATE_GRPC_PORT', 50051))
+        idx = idx or os.getenv('WEAVIATE_INDEX')
+        embedding_serving_id = embedding_serving_id or int(os.getenv('EMBEDDING_SERVING_ID', 10))
+        embedding_bearer_token = embedding_bearer_token or os.getenv('EMBEDDING_BEARER_TOKEN')
+        embedding_genos_url = embedding_genos_url or os.getenv('EMBEDDING_GENOS_URL', 'https://genos.genon.ai:3443')
+        
+        # 대체 설정 (Fallback)
+        fallback_host = os.getenv('WEAVIATE_FALLBACK_HOST', '192.168.74.171')
+        fallback_http_port = int(os.getenv('WEAVIATE_FALLBACK_HTTP_PORT', 32208))
+        fallback_grpc_port = int(os.getenv('WEAVIATE_FALLBACK_GRPC_PORT', 32122))
+        
         self.client = None
         
         # 1. Weaviate 연결 로직 (v4 connect_to_custom)
@@ -26,17 +45,18 @@ class vectordb:
                 
             )
             print(f'Weaviate 접속 성공: {genos_ip}:{http_port}')
-        except Exception:
+        except Exception as e:
+            print(f'주 설정 연결 실패: {e}. 대체 설정으로 시도 중...')
             try:
                 self.client = weaviate.connect_to_custom(
-                    http_host="192.168.74.171",
-                    http_port=32208,
+                    http_host=fallback_host,
+                    http_port=fallback_http_port,
                     http_secure=False,
-                    grpc_host="192.168.74.171",
-                    grpc_port=32122,
+                    grpc_host=fallback_host,
+                    grpc_port=fallback_grpc_port,
                     grpc_secure=False,
                 )
-                print('Weaviate 접속 성공: 192.168.74.171:32208')
+                print(f'Weaviate 접속 성공: {fallback_host}:{fallback_http_port}')
             except Exception as e:
                 print(f'Weaviate 접속 실패: {e}')
 
