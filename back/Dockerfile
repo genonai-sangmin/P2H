@@ -16,7 +16,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # 포트 노출
-EXPOSE 8000
+EXPOSE 1999
 
 # 애플리케이션 시작
 CMD ["python", "main.py"]

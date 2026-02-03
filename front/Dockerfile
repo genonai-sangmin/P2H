@@ -14,7 +14,7 @@ RUN npm ci
 COPY . .
 
 # 포트 노출
-EXPOSE 5173
+EXPOSE 2000
 
 # 개발 서버 시작
 CMD ["npm", "run", "dev"]
