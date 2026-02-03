@@ -65,8 +65,18 @@ class vectordb:
         if not idx:
             print('벡터 인덱스가 설정되지 않았습니다.')
         else:
-            self.collection = self.client.collections.get(idx)
-            print(f'VDB 컬렉션 [{idx}] 설정 완료.')
+            try:
+                # 컬렉션 존재 여부 확인
+                if self.client.collections.exists(idx):
+                    self.collection = self.client.collections.get(idx)
+                    print(f'VDB 컬렉션 [{idx}] 설정 완료.')
+                else:
+                    print(f'경고: 컬렉션 [{idx}]이 존재하지 않습니다.')
+                    print(f'사용 가능한 컬렉션: {list(self.client.collections.list_all().keys())}')
+                    self.collection = None
+            except Exception as e:
+                print(f'컬렉션 설정 중 오류 발생: {e}')
+                self.collection = None
 
         # 3. 임베딩 설정
         self.emb = embedding_serving(
@@ -96,15 +106,24 @@ class vectordb:
         return False
 
     def dense_search(self, query:str, topk = 4):
+        if self.collection is None:
+            print('경고: 컬렉션이 설정되지 않았습니다.')
+            return []
         vector = self.emb.call(query)[0]['embedding']
         results = [i.properties for i in self.collection.query.near_vector(near_vector=vector, limit=topk).objects]
         return results
     
     def bm25_search(self, query:str, topk = 4):
+        if self.collection is None:
+            print('경고: 컬렉션이 설정되지 않았습니다.')
+            return []
         results = [i.properties for i in self.collection.query.bm25(query, limit=topk).objects]
         return results
     
     def hybrid_search(self, query:str, topk:int = 4, alpha:float = 0.5):
+        if self.collection is None:
+            print('경고: 컬렉션이 설정되지 않았습니다.')
+            return []
         vector = self.emb.call(query)[0]['embedding']
         results = [i.properties for i in self.collection.query.hybrid(
             query=query, vector=vector, alpha=alpha, limit=topk
@@ -136,15 +155,26 @@ class vectordb:
             return [{'message': '필터가 적용되지 않았습니다.'}] + res
 
     def show_documents(self):
-        query_return = self.collection.query.fetch_objects(
-            limit=10000,
-            return_properties=['file_name']
-        )
-        # 중복 제거된 파일 이름 리스트
-        file_names = list(set(i.properties['file_name'] for i in query_return.objects if 'file_name' in i.properties))
-        return file_names
+        if self.collection is None:
+            print('경고: 컬렉션이 설정되지 않았습니다.')
+            return []
+        
+        try:
+            query_return = self.collection.query.fetch_objects(
+                limit=10000,
+                return_properties=['file_name']
+            )
+            # 중복 제거된 파일 이름 리스트
+            file_names = list(set(i.properties['file_name'] for i in query_return.objects if 'file_name' in i.properties))
+            return file_names
+        except Exception as e:
+            print(f'문서 조회 중 오류 발생: {e}')
+            return []
 
     def search_from_file_name(self, query:str, file_name_pattern: str, topk=4):
+        if self.collection is None:
+            print('경고: 컬렉션이 설정되지 않았습니다.')
+            return []
         vector = self.emb.call(query)[0]['embedding']
         query_return = self.collection.query.hybrid(
             query=query,
