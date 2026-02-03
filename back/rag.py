@@ -10,7 +10,8 @@ def get_contents_by_file_name(file_name_pattern: str) -> list:
     """
 
     # 1. 인덱스 연결 (context manager로 자동 close)
-    with vectordb(idx='R93760317d29f4ec9936e832cef9b7eec') as vdb:
+    # idx를 지정하지 않으면 .env 또는 기본값을 사용합니다.
+    with vectordb() as vdb:
 
         # 중복 로직을 처리하는 내부 함수
         def _fetch_and_process(pattern: str) -> list:
@@ -48,6 +49,6 @@ def show_documents() -> list:
     """
     저장된 문서(파일) 목록을 반환합니다.
     """
-    with vectordb(idx='R93760317d29f4ec9936e832cef9b7eec') as vdb:
+    with vectordb() as vdb:
         file_names = vdb.show_documents()
     return file_names
